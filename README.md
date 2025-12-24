@@ -19,3 +19,4 @@ View your app in AI Studio: https://ai.studio/apps/drive/1WQwlM5AAOU6xpE-BdSX96m
 3. Run the app:
    `npm run dev`
 # Solo_Agent
+# SoloAgent
