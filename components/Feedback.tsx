@@ -1,18 +1,29 @@
-
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 
-const Feedback: React.FC = () => {
+interface FeedbackProps {
+  isLocalMode?: boolean;
+}
+
+const Feedback: React.FC<FeedbackProps> = ({ isLocalMode }) => {
   const [feedback, setFeedback] = useState('');
   const [sending, setSending] = useState(false);
   const [done, setDone] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!feedback.trim() || !supabase) return;
+    if (!feedback.trim()) return;
     setSending(true);
 
     try {
+      if (isLocalMode) {
+        // Mock sending in local mode
+        await new Promise(resolve => setTimeout(resolve, 800));
+        setDone(true);
+        return;
+      }
+
+      if (!supabase) throw new Error("No database connected");
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("No user");
 
@@ -27,7 +38,7 @@ const Feedback: React.FC = () => {
       setDone(true);
     } catch (err) {
       console.error(err);
-      alert('Failed to send feedback. Please try again.');
+      alert('Failed to send feedback. Please check your connection.');
     } finally {
       setSending(false);
     }

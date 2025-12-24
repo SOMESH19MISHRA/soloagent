@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Profile as ProfileType } from '../types';
 import { supabase } from '../supabaseClient';
@@ -7,9 +6,10 @@ interface ProfileProps {
   profile: ProfileType | null;
   email: string | undefined;
   onUpdate: (updated: ProfileType) => void;
+  isLocalMode?: boolean;
 }
 
-const Profile: React.FC<ProfileProps> = ({ profile, email, onUpdate }) => {
+const Profile: React.FC<ProfileProps> = ({ profile, email, onUpdate, isLocalMode }) => {
   const [name, setName] = useState(profile?.full_name || '');
   const [phone, setPhone] = useState(profile?.phone || '');
   const [saving, setSaving] = useState(false);
@@ -17,6 +17,13 @@ const Profile: React.FC<ProfileProps> = ({ profile, email, onUpdate }) => {
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLocalMode) {
+      if (profile) onUpdate({ ...profile, full_name: name, phone: phone });
+      setMessage('Saved Locally');
+      setTimeout(() => setMessage(''), 3000);
+      return;
+    }
+
     if (!profile || !supabase) return;
     setSaving(true);
     setMessage('');
@@ -52,7 +59,7 @@ const Profile: React.FC<ProfileProps> = ({ profile, email, onUpdate }) => {
               type="text"
               readOnly
               className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-400 outline-none cursor-not-allowed"
-              value={email || 'N/A'}
+              value={email || 'local@offline.dev'}
             />
           </div>
 
@@ -82,7 +89,7 @@ const Profile: React.FC<ProfileProps> = ({ profile, email, onUpdate }) => {
             <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Plan Status</label>
             <div className="px-4 py-3 bg-blue-50 border border-blue-100 rounded-xl">
               <span className="text-sm font-black text-blue-600 uppercase tracking-widest">
-                {profile?.is_active ? 'Active Pro' : 'Free Trial'}
+                {isLocalMode ? 'Local Lifetime' : (profile?.is_active ? 'Active Pro' : 'Free Trial')}
               </span>
             </div>
           </div>
@@ -99,6 +106,14 @@ const Profile: React.FC<ProfileProps> = ({ profile, email, onUpdate }) => {
           {message && <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest">{message}</span>}
         </div>
       </form>
+      
+      {isLocalMode && (
+        <div className="mt-8 p-4 bg-amber-50 rounded-2xl border border-amber-100">
+           <p className="text-xs text-amber-800 font-bold leading-relaxed">
+             Note: You are currently using the app without a cloud connection. Data is saved only in this browser. Add your Supabase keys to the environment to enable cross-device syncing.
+           </p>
+        </div>
+      )}
     </div>
   );
 };

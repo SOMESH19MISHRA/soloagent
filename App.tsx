@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { Lead, View, Profile as ProfileType } from './types';
-import { supabase, clearManualConfig } from './supabaseClient';
+import { supabase } from './supabaseClient';
 import Sidebar from './components/Sidebar';
+import BottomNav from './components/BottomNav';
 import Dashboard from './components/Dashboard';
 import LeadsList from './components/LeadsList';
 import LeadDetail from './components/LeadDetail';
@@ -26,15 +27,12 @@ const App: React.FC = () => {
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('signup');
   const [isLocalMode, setIsLocalMode] = useState(false);
 
-  // Derived Access State
   const hasAccess = profile ? (profile.is_active || !isTrialExpired(profile.created_at)) : true;
 
   useEffect(() => {
     if (!supabase) {
-      // ENTER LOCAL MODE: If no Supabase key is found, use local storage
       setIsLocalMode(true);
-      const localLeads = loadLeads();
-      setLeads(localLeads);
+      setLeads(loadLeads());
       setLoading(false);
       return;
     }
@@ -50,7 +48,6 @@ const App: React.FC = () => {
           setLoading(false);
         }
       } catch (err: any) {
-        // Fallback to local mode on connection failure
         setIsLocalMode(true);
         setLeads(loadLeads());
         setLoading(false);
@@ -134,7 +131,7 @@ const App: React.FC = () => {
         if (currentView === 'profile-setup') setCurrentView('dashboard');
       }
     } catch (error: any) {
-      console.error("Database fetch failed, continuing in local mode.", error);
+      console.error("Database sync failed, continuing locally.");
     } finally {
       setLoading(false);
     }
@@ -146,27 +143,32 @@ const App: React.FC = () => {
   };
 
   const updateLeadInState = (updatedLead: Lead) => {
-    const newLeads = leads.map(l => l.id === updatedLead.id ? updatedLead : l);
-    setLeads(newLeads);
-    if (isLocalMode) saveLeads(newLeads);
+    setLeads(prev => {
+      const next = prev.map(l => l.id === updatedLead.id ? updatedLead : l);
+      if (isLocalMode) saveLeads(next);
+      return next;
+    });
   };
 
   const addLead = (newLead: Lead) => {
-    const newLeads = [newLead, ...leads];
-    setLeads(newLeads);
-    if (isLocalMode) saveLeads(newLeads);
+    setLeads(prev => {
+      const next = [newLead, ...prev];
+      if (isLocalMode) saveLeads(next);
+      return next;
+    });
     setSelectedLeadId(newLead.id);
     setCurrentView('lead-detail');
   };
 
   const deleteLead = (id: string) => {
-    const newLeads = leads.filter(l => l.id !== id);
-    setLeads(newLeads);
-    if (isLocalMode) saveLeads(newLeads);
+    setLeads(prev => {
+      const next = prev.filter(l => l.id !== id);
+      if (isLocalMode) saveLeads(next);
+      return next;
+    });
     setCurrentView('leads');
   };
 
-  // Skip auth for local mode
   const handleStart = () => {
     if (isLocalMode) {
       setShowLanding(false);
@@ -188,7 +190,7 @@ const App: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-white text-center">
       <div className="flex flex-col items-center gap-4">
         <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-        <p className="font-black text-xs uppercase tracking-widest text-gray-400">Loading Workspace...</p>
+        <p className="font-black text-xs uppercase tracking-widest text-gray-400">Syncing Workspace...</p>
       </div>
     </div>
   );
@@ -200,7 +202,7 @@ const App: React.FC = () => {
   if (!session && !isLocalMode) return <Auth initialMode={authMode} onBack={() => setShowLanding(true)} />;
 
   const renderView = () => {
-    if (currentView === 'profile-setup' && !isLocalMode) return <ProfileSetup onComplete={() => fetchUserData(session?.user?.id)} />;
+    if (currentView === 'profile-setup' && !isLocalMode) return <ProfileSetup onComplete={() => fetchUserData(session.user.id)} />;
     
     const userContext = { profile, email: session?.user?.email || 'local@offline.dev' };
 
@@ -219,22 +221,22 @@ const App: React.FC = () => {
             onBack={() => setCurrentView('leads')}
             isActive={hasAccess}
             userContext={userContext}
+            isLocalMode={isLocalMode}
           />
         ) : <div className="p-20 text-center font-bold text-gray-400">Lead not found.</div>;
       case 'add-lead':
-        return <LeadForm isActive={hasAccess} onSave={addLead} onCancel={() => setCurrentView('leads')} userContext={userContext} />;
+        return <LeadForm isActive={hasAccess} onSave={addLead} onCancel={() => setCurrentView('leads')} userContext={userContext} isLocalMode={isLocalMode} />;
       case 'profile':
-        return <Profile profile={profile} email={userContext.email} onUpdate={(u) => setProfile(u)} />;
+        return <Profile profile={profile} email={userContext.email} onUpdate={(u) => setProfile(u)} isLocalMode={isLocalMode} />;
       case 'feedback':
-        return <Feedback />;
+        return <Feedback isLocalMode={isLocalMode} />;
       default:
         return null;
     }
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* GLOBAL PAYWALL LOCK - Disabled for Local Mode */}
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50 pb-20 md:pb-0">
       {!isLocalMode && !hasAccess && currentView !== 'profile' && currentView !== 'feedback' && (
         <Paywall 
           onCancel={() => {}} 
@@ -245,21 +247,29 @@ const App: React.FC = () => {
         />
       )}
       
-      <Sidebar 
-        currentView={currentView} 
-        setView={setCurrentView} 
-        onLogout={() => isLocalMode ? window.location.reload() : supabase?.auth.signOut()} 
-        onResetConfig={clearManualConfig} 
-      />
-      
+      {/* Sidebar hidden on mobile, shown on desktop */}
+      <div className="hidden md:block">
+        <Sidebar 
+          currentView={currentView} 
+          setView={setCurrentView} 
+          onLogout={() => isLocalMode ? window.location.reload() : supabase?.auth.signOut()} 
+        />
+      </div>
+
+      {/* Main Content */}
       <main className="flex-1 p-4 md:p-8 overflow-y-auto relative">
         {isLocalMode && (
-          <div className="fixed bottom-4 right-4 bg-amber-100 text-amber-700 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border border-amber-200 z-[60]">
-            Local Mode (Offline)
+          <div className="fixed bottom-24 md:bottom-4 right-4 bg-amber-100 text-amber-700 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border border-amber-200 z-[60] shadow-sm">
+            Offline Mode
           </div>
         )}
         {renderView()}
       </main>
+
+      {/* Bottom Nav hidden on desktop, shown on mobile */}
+      <div className="md:hidden">
+        <BottomNav currentView={currentView} setView={setCurrentView} />
+      </div>
     </div>
   );
 };

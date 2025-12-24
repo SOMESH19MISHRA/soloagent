@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Lead, InterestType, LeadStatus } from '../types';
 import { supabase } from '../supabaseClient';
@@ -12,9 +11,10 @@ interface LeadFormProps {
     profile: any;
     email: string;
   };
+  isLocalMode?: boolean;
 }
 
-const LeadForm: React.FC<LeadFormProps> = ({ onSave, onCancel, isActive, userContext }) => {
+const LeadForm: React.FC<LeadFormProps> = ({ onSave, onCancel, isActive, userContext, isLocalMode }) => {
   const [showPaywall, setShowPaywall] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +38,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ onSave, onCancel, isActive, userCon
       return;
     }
 
-    if (!isActive) {
+    if (!isLocalMode && !isActive) {
       setShowPaywall(true);
       return;
     }
@@ -46,8 +46,31 @@ const LeadForm: React.FC<LeadFormProps> = ({ onSave, onCancel, isActive, userCon
     setIsSubmitting(true);
 
     try {
-      if (!supabase) throw new Error("Database not connected.");
+      if (isLocalMode) {
+        const localId = Math.random().toString(36).substr(2, 9);
+        const newLead: Lead = {
+          id: localId,
+          user_id: 'local-user',
+          fullName: formData.fullName,
+          phone: formData.phone,
+          interestType: formData.interestType,
+          budget: Number(formData.budget) || 0,
+          area: formData.area,
+          status: formData.status,
+          notes: formData.initialNote.trim() ? [{
+            id: 'note-' + localId,
+            lead_id: localId,
+            text: formData.initialNote.trim(),
+            createdAt: new Date().toISOString()
+          }] : [],
+          followUps: [],
+          createdAt: new Date().toISOString()
+        };
+        onSave(newLead);
+        return;
+      }
 
+      if (!supabase) throw new Error("Database not connected.");
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Session expired. Please log in again.");
 
