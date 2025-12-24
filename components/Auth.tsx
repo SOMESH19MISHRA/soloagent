@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
@@ -18,14 +17,16 @@ const Auth: React.FC<AuthProps> = ({ onBack, initialMode = 'login' }) => {
   const [error, setError] = useState('');
   const [isEmailSent, setIsEmailSent] = useState(false);
 
-  // Sync state if prop changes
   useEffect(() => {
     setIsLogin(initialMode === 'login');
   }, [initialMode]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!supabase) return;
+    if (!supabase) {
+      setError("Service Unavailable: Supabase keys are missing or invalid in .env");
+      return;
+    }
     setLoading(true);
     setError('');
     
@@ -46,7 +47,6 @@ const Auth: React.FC<AuthProps> = ({ onBack, initialMode = 'login' }) => {
         });
         if (error) throw error;
         
-        // If signup is successful and we got a user but no session yet (standard for email verification)
         if (data.user && !data.session) {
           setIsEmailSent(true);
         }
@@ -72,7 +72,7 @@ const Auth: React.FC<AuthProps> = ({ onBack, initialMode = 'login' }) => {
             We've sent a verification link to <span className="text-gray-900 font-bold">{email}</span>. 
           </p>
           
-          <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
+          <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 mt-6">
             <p className="text-xs text-gray-600 font-black uppercase tracking-widest leading-relaxed">
               Once you verify your email, please return here and log in again to access your dashboard.
             </p>
@@ -84,16 +84,9 @@ const Auth: React.FC<AuthProps> = ({ onBack, initialMode = 'login' }) => {
               setIsLogin(true);
               setError('');
             }} 
-            className="w-full py-4 bg-gray-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-black transition-all"
+            className="w-full mt-8 py-4 bg-gray-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-black transition-all"
           >
             Go to Login
-          </button>
-          
-          <button 
-            onClick={() => setIsEmailSent(false)} 
-            className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:underline"
-          >
-            Entered wrong email? Go back
           </button>
         </div>
       </div>
@@ -113,26 +106,32 @@ const Auth: React.FC<AuthProps> = ({ onBack, initialMode = 'login' }) => {
         )}
         
         <div className="text-center">
-          {!isLogin && (
-            <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black text-2xl mx-auto mb-4">S</div>
-          )}
-          <h2 className="text-3xl font-black text-gray-900 tracking-tight">
-            {isLogin ? 'Welcome Back.' : 'Your Professional Workspace.'}
+          <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black text-2xl mx-auto mb-4 shadow-lg shadow-blue-100">S</div>
+          <h2 className="text-3xl font-black text-gray-900 tracking-tight leading-none">
+            {isLogin ? 'Welcome Back.' : 'Create Account.'}
           </h2>
-          <p className="mt-2 text-sm text-gray-500 font-medium">Clear your mind. Follow up with discipline.</p>
+          <p className="mt-3 text-sm text-gray-500 font-medium">Professional follow-up tool for solo agents.</p>
         </div>
+
+        {!supabase && (
+          <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl">
+             <p className="text-[10px] font-black text-amber-700 uppercase tracking-widest text-center">
+               ⚠️ Warning: .env Keys Missing. Login will fail.
+             </p>
+          </div>
+        )}
 
         <form className="mt-8 space-y-5" onSubmit={handleAuth}>
           <div className="space-y-4">
             {!isLogin && (
               <>
                 <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Professional Name</label>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Your Name</label>
                   <input
                     type="text"
                     required
-                    placeholder="Full Name"
-                    className="w-full bg-gray-100 border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-black outline-none focus:border-blue-500 focus:bg-white transition-all"
+                    placeholder="Somesh Mishra"
+                    className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-black outline-none focus:border-blue-500 focus:bg-white transition-all"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                   />
@@ -143,7 +142,7 @@ const Auth: React.FC<AuthProps> = ({ onBack, initialMode = 'login' }) => {
                     type="tel"
                     required
                     placeholder="+91"
-                    className="w-full bg-gray-100 border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-black outline-none focus:border-blue-500 focus:bg-white transition-all"
+                    className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-black outline-none focus:border-blue-500 focus:bg-white transition-all"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                   />
@@ -155,7 +154,7 @@ const Auth: React.FC<AuthProps> = ({ onBack, initialMode = 'login' }) => {
               <input
                 type="email"
                 required
-                className="w-full bg-gray-100 border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-black outline-none focus:border-blue-500 focus:bg-white transition-all"
+                className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-black outline-none focus:border-blue-500 focus:bg-white transition-all"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -166,7 +165,7 @@ const Auth: React.FC<AuthProps> = ({ onBack, initialMode = 'login' }) => {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
-                  className="w-full bg-gray-100 border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-black outline-none focus:border-blue-500 focus:bg-white transition-all"
+                  className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-black outline-none focus:border-blue-500 focus:bg-white transition-all"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -176,14 +175,9 @@ const Auth: React.FC<AuthProps> = ({ onBack, initialMode = 'login' }) => {
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                 >
                   {showPassword ? (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                   ) : (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
-                    </svg>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" /></svg>
                   )}
                 </button>
               </div>
@@ -201,11 +195,11 @@ const Auth: React.FC<AuthProps> = ({ onBack, initialMode = 'login' }) => {
             disabled={loading}
             className="w-full flex justify-center py-4 px-4 border border-transparent text-xs font-black uppercase tracking-[0.2em] rounded-xl text-white bg-gray-900 hover:bg-black transition-all shadow-xl shadow-gray-200 disabled:opacity-50"
           >
-            {loading ? 'Syncing...' : isLogin ? 'Access Account' : 'Create Account'}
+            {loading ? 'Processing...' : isLogin ? 'Access Account' : 'Secure Registration'}
           </button>
         </form>
 
-        <div className="text-center">
+        <div className="text-center pt-2">
           <button
             onClick={() => {
               setIsLogin(!isLogin);
@@ -214,7 +208,7 @@ const Auth: React.FC<AuthProps> = ({ onBack, initialMode = 'login' }) => {
             }}
             className="text-xs font-black text-blue-600 uppercase tracking-widest hover:underline"
           >
-            {isLogin ? "Need an account? Sign up" : 'Already have an account? Login'}
+            {isLogin ? "Need an account? Join Now" : 'Already have an account? Sign in'}
           </button>
         </div>
       </div>

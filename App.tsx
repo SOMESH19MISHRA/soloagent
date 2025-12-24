@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Lead, View, Profile as ProfileType } from './types';
 import { supabase } from './supabaseClient';
@@ -30,7 +29,10 @@ const App: React.FC = () => {
   const hasAccess = profile ? (profile.is_active || !isTrialExpired(profile.created_at)) : true;
 
   useEffect(() => {
+    // If supabase keys are missing from .env, we flag Local Mode for data handling
+    // but we still want to show the Auth gate to the user.
     if (!supabase) {
+      console.warn("Supabase client is null. Check your .env keys.");
       setIsLocalMode(true);
       setLeads(loadLeads());
       setLoading(false);
@@ -170,20 +172,8 @@ const App: React.FC = () => {
   };
 
   const handleStart = () => {
-    if (isLocalMode) {
-      setShowLanding(false);
-      setProfile({
-        id: 'local-user',
-        full_name: 'Local Agent',
-        phone: 'N/A',
-        is_active: true,
-        created_at: new Date().toISOString()
-      });
-      setCurrentView('dashboard');
-    } else {
-      setAuthMode('signup');
-      setShowLanding(false);
-    }
+    setAuthMode('signup');
+    setShowLanding(false);
   };
 
   if (loading) return (
@@ -199,12 +189,15 @@ const App: React.FC = () => {
     return <LandingPage onStart={handleStart} onLogin={() => { setAuthMode('login'); setShowLanding(false); }} />;
   }
 
-  if (!session && !isLocalMode) return <Auth initialMode={authMode} onBack={() => setShowLanding(true)} />;
+  // Mandatory Auth Gate: If no session, always show Auth.
+  if (!session) {
+    return <Auth initialMode={authMode} onBack={() => setShowLanding(true)} />;
+  }
 
   const renderView = () => {
-    if (currentView === 'profile-setup' && !isLocalMode) return <ProfileSetup onComplete={() => fetchUserData(session.user.id)} />;
+    if (currentView === 'profile-setup') return <ProfileSetup onComplete={() => fetchUserData(session.user.id)} />;
     
-    const userContext = { profile, email: session?.user?.email || 'local@offline.dev' };
+    const userContext = { profile, email: session?.user?.email || 'user@soloagent.ai' };
 
     switch (currentView) {
       case 'dashboard':
@@ -247,26 +240,23 @@ const App: React.FC = () => {
         />
       )}
       
-      {/* Sidebar hidden on mobile, shown on desktop */}
       <div className="hidden md:block">
         <Sidebar 
           currentView={currentView} 
           setView={setCurrentView} 
-          onLogout={() => isLocalMode ? window.location.reload() : supabase?.auth.signOut()} 
+          onLogout={() => supabase?.auth.signOut()} 
         />
       </div>
 
-      {/* Main Content */}
       <main className="flex-1 p-4 md:p-8 overflow-y-auto relative">
         {isLocalMode && (
           <div className="fixed bottom-24 md:bottom-4 right-4 bg-amber-100 text-amber-700 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border border-amber-200 z-[60] shadow-sm">
-            Offline Mode
+            Cloud Connection Warning
           </div>
         )}
         {renderView()}
       </main>
 
-      {/* Bottom Nav hidden on desktop, shown on mobile */}
       <div className="md:hidden">
         <BottomNav currentView={currentView} setView={setCurrentView} />
       </div>
