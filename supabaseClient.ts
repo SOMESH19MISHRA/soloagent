@@ -6,7 +6,7 @@ const getSupabaseConfig = () => {
   let url = process.env.SUPABASE_URL;
   let key = process.env.SUPABASE_ANON_KEY;
 
-  // 2. Fallback to LocalStorage (for manual setup via UI)
+  // 2. Fallback to LocalStorage (for manual setup via UI if keys are missing from .env)
   if (!url || !key) {
     const saved = localStorage.getItem('SOLOAGENT_SUPABASE_CONFIG');
     if (saved) {
@@ -21,15 +21,10 @@ const getSupabaseConfig = () => {
 
 const config = getSupabaseConfig();
 
+// Simply returns null if config is missing, allowing App.tsx to switch to LocalStorage mode
 export const supabase = (config.url && config.key) 
   ? createClient(config.url, config.key) 
   : null;
-
-// Helper to manually save config and reload
-export const saveManualConfig = (url: string, key: string) => {
-  localStorage.setItem('SOLOAGENT_SUPABASE_CONFIG', JSON.stringify({ url, key }));
-  window.location.reload();
-};
 
 export const clearManualConfig = () => {
   localStorage.removeItem('SOLOAGENT_SUPABASE_CONFIG');

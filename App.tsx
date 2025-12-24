@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Lead, View, Profile as ProfileType } from './types';
-import { supabase, saveManualConfig, clearManualConfig } from './supabaseClient';
+import { supabase, clearManualConfig } from './supabaseClient';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import LeadsList from './components/LeadsList';
@@ -13,7 +13,7 @@ import LandingPage from './components/LandingPage';
 import Profile from './components/Profile';
 import Feedback from './components/Feedback';
 import Paywall from './components/Paywall';
-import { isTrialExpired } from './utils';
+import { isTrialExpired, loadLeads, saveLeads } from './utils';
 
 const App: React.FC = () => {
   const [session, setSession] = useState<any>(null);
@@ -24,18 +24,17 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showLanding, setShowLanding] = useState(true);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('signup');
-  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [isLocalMode, setIsLocalMode] = useState(false);
 
   // Derived Access State
   const hasAccess = profile ? (profile.is_active || !isTrialExpired(profile.created_at)) : true;
 
-  // Connection Wizard State
-  const [manualUrl, setManualUrl] = useState('');
-  const [manualKey, setManualKey] = useState('');
-  const [connError, setConnError] = useState('');
-
   useEffect(() => {
     if (!supabase) {
+      // ENTER LOCAL MODE: If no Supabase key is found, use local storage
+      setIsLocalMode(true);
+      const localLeads = loadLeads();
+      setLeads(localLeads);
       setLoading(false);
       return;
     }
@@ -51,7 +50,9 @@ const App: React.FC = () => {
           setLoading(false);
         }
       } catch (err: any) {
-        setFetchError("Connection Error: Failed to reach database server.");
+        // Fallback to local mode on connection failure
+        setIsLocalMode(true);
+        setLeads(loadLeads());
         setLoading(false);
       }
     };
@@ -77,7 +78,6 @@ const App: React.FC = () => {
   const fetchUserData = async (userId: string, retryCount = 0) => {
     if (!supabase) return;
     setLoading(true);
-    setFetchError(null);
     try {
       const [profileRes, subRes] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
@@ -134,24 +134,10 @@ const App: React.FC = () => {
         if (currentView === 'profile-setup') setCurrentView('dashboard');
       }
     } catch (error: any) {
-      if (error.message === 'Failed to fetch') {
-        setFetchError("Network Error: Could not connect to Supabase.");
-      } else {
-        setFetchError("Database Error: " + (error.message || "Unknown error"));
-      }
+      console.error("Database fetch failed, continuing in local mode.", error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleManualConnect = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!manualUrl || !manualKey) {
-      setConnError('Both fields are required.');
-      return;
-    }
-    setConnError('');
-    saveManualConfig(manualUrl, manualKey);
   };
 
   const navigateToLead = (id: string) => {
@@ -160,53 +146,63 @@ const App: React.FC = () => {
   };
 
   const updateLeadInState = (updatedLead: Lead) => {
-    setLeads(prevLeads => prevLeads.map(l => l.id === updatedLead.id ? updatedLead : l));
+    const newLeads = leads.map(l => l.id === updatedLead.id ? updatedLead : l);
+    setLeads(newLeads);
+    if (isLocalMode) saveLeads(newLeads);
   };
 
   const addLead = (newLead: Lead) => {
-    setLeads(prevLeads => [newLead, ...prevLeads]);
+    const newLeads = [newLead, ...leads];
+    setLeads(newLeads);
+    if (isLocalMode) saveLeads(newLeads);
     setSelectedLeadId(newLead.id);
     setCurrentView('lead-detail');
   };
 
-  if (!supabase || fetchError) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-        <div className="max-w-xl w-full bg-white p-10 md:p-14 rounded-[40px] border-2 border-gray-100 shadow-2xl">
-          <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center font-black text-white mb-8">S</div>
-          <h2 className="text-4xl font-black text-gray-900 mb-4 tracking-tight">Database<br/>Connection.</h2>
-          <p className="text-gray-500 font-medium mb-10">{fetchError ? "Failed to reach your database. Verify settings." : "Connect your Supabase instance."}</p>
-          <form onSubmit={handleManualConnect} className="space-y-6">
-            <input type="text" placeholder="Supabase URL" className="w-full bg-gray-100 border-2 rounded-2xl px-5 py-4 font-bold" value={manualUrl} onChange={(e) => setManualUrl(e.target.value)} />
-            <input type="password" placeholder="Anon Key" className="w-full bg-gray-100 border-2 rounded-2xl px-5 py-4 font-bold" value={manualKey} onChange={(e) => setManualKey(e.target.value)} />
-            {fetchError && <p className="text-red-500 text-xs font-bold bg-red-50 p-3 rounded-lg border border-red-100">{fetchError}</p>}
-            <button type="submit" className="w-full bg-gray-900 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em]">Save & Connect</button>
-          </form>
-        </div>
-      </div>
-    );
-  }
+  const deleteLead = (id: string) => {
+    const newLeads = leads.filter(l => l.id !== id);
+    setLeads(newLeads);
+    if (isLocalMode) saveLeads(newLeads);
+    setCurrentView('leads');
+  };
 
-  if (!session && showLanding) {
-    return <LandingPage onStart={() => { setAuthMode('signup'); setShowLanding(false); }} onLogin={() => { setAuthMode('login'); setShowLanding(false); }} />;
-  }
-
-  if (!session) return <Auth initialMode={authMode} onBack={() => setShowLanding(true)} />;
+  // Skip auth for local mode
+  const handleStart = () => {
+    if (isLocalMode) {
+      setShowLanding(false);
+      setProfile({
+        id: 'local-user',
+        full_name: 'Local Agent',
+        phone: 'N/A',
+        is_active: true,
+        created_at: new Date().toISOString()
+      });
+      setCurrentView('dashboard');
+    } else {
+      setAuthMode('signup');
+      setShowLanding(false);
+    }
+  };
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-white text-center">
       <div className="flex flex-col items-center gap-4">
         <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-        <p className="font-black text-xs uppercase tracking-widest text-gray-400">Syncing Workspace...</p>
+        <p className="font-black text-xs uppercase tracking-widest text-gray-400">Loading Workspace...</p>
       </div>
     </div>
   );
 
+  if (showLanding) {
+    return <LandingPage onStart={handleStart} onLogin={() => { setAuthMode('login'); setShowLanding(false); }} />;
+  }
+
+  if (!session && !isLocalMode) return <Auth initialMode={authMode} onBack={() => setShowLanding(true)} />;
+
   const renderView = () => {
-    if (currentView === 'profile-setup') return <ProfileSetup onComplete={() => fetchUserData(session.user.id)} />;
+    if (currentView === 'profile-setup' && !isLocalMode) return <ProfileSetup onComplete={() => fetchUserData(session?.user?.id)} />;
     
-    // Feature gating logic
-    const userContext = { profile, email: session?.user?.email };
+    const userContext = { profile, email: session?.user?.email || 'local@offline.dev' };
 
     switch (currentView) {
       case 'dashboard':
@@ -219,7 +215,7 @@ const App: React.FC = () => {
           <LeadDetail 
             lead={selectedLead} 
             onUpdate={updateLeadInState}
-            onDelete={(id) => setLeads(leads.filter(l => l.id !== id))}
+            onDelete={deleteLead}
             onBack={() => setCurrentView('leads')}
             isActive={hasAccess}
             userContext={userContext}
@@ -228,7 +224,7 @@ const App: React.FC = () => {
       case 'add-lead':
         return <LeadForm isActive={hasAccess} onSave={addLead} onCancel={() => setCurrentView('leads')} userContext={userContext} />;
       case 'profile':
-        return <Profile profile={profile} email={session?.user?.email} onUpdate={(u) => setProfile(u)} />;
+        return <Profile profile={profile} email={userContext.email} onUpdate={(u) => setProfile(u)} />;
       case 'feedback':
         return <Feedback />;
       default:
@@ -238,8 +234,8 @@ const App: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* GLOBAL PAYWALL LOCK */}
-      {!hasAccess && currentView !== 'profile' && currentView !== 'feedback' && (
+      {/* GLOBAL PAYWALL LOCK - Disabled for Local Mode */}
+      {!isLocalMode && !hasAccess && currentView !== 'profile' && currentView !== 'feedback' && (
         <Paywall 
           onCancel={() => {}} 
           userId={profile?.id} 
@@ -249,10 +245,19 @@ const App: React.FC = () => {
         />
       )}
       
-      {currentView !== 'profile-setup' && (
-        <Sidebar currentView={currentView} setView={setCurrentView} onLogout={() => supabase.auth.signOut()} onResetConfig={clearManualConfig} />
-      )}
+      <Sidebar 
+        currentView={currentView} 
+        setView={setCurrentView} 
+        onLogout={() => isLocalMode ? window.location.reload() : supabase?.auth.signOut()} 
+        onResetConfig={clearManualConfig} 
+      />
+      
       <main className="flex-1 p-4 md:p-8 overflow-y-auto relative">
+        {isLocalMode && (
+          <div className="fixed bottom-4 right-4 bg-amber-100 text-amber-700 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border border-amber-200 z-[60]">
+            Local Mode (Offline)
+          </div>
+        )}
         {renderView()}
       </main>
     </div>
