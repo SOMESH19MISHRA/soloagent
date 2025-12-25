@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { supabase } from '../supabaseClient';
 
 interface PaywallProps {
   onCancel: () => void;
@@ -10,12 +11,17 @@ interface PaywallProps {
 }
 
 const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhone, isHardLock = false }) => {
-  const handlePayment = () => {
-    // Pulls from environment variables in your local setup
-    const RAZORPAY_KEY = process.env.RAZORPAY_KEY || "rzp_test_YOUR_KEY_HERE"; 
+  const handlePayment = async () => {
+    // Accessing environment variables via process.env to resolve TypeScript errors
+    const RAZORPAY_KEY = process.env.VITE_RAZORPAY_KEY_ID; 
     
     if (!(window as any).Razorpay) {
-      alert("Razorpay is currently unavailable. Check your connection.");
+      alert("Payment gateway (Razorpay) failed to load. Please refresh the page.");
+      return;
+    }
+
+    if (!userId || !supabase) {
+      alert("Session error. Please log in again.");
       return;
     }
 
@@ -24,7 +30,7 @@ const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhon
       amount: 49900, // ₹499.00 (amount in paise)
       currency: "INR",
       name: "SoloAgent Pro",
-      description: "Unlimited Pipeline Protection",
+      description: "30-Day Professional Access",
       prefill: {
         email: userEmail || "",
         contact: userPhone || ""
@@ -33,9 +39,29 @@ const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhon
         user_id: userId 
       },
       theme: { color: "#2563eb" },
-      handler: function(response: any) {
-        alert("Payment successful. Your dashboard will unlock in a few moments.");
-        window.location.reload();
+      handler: async function(response: any) {
+        // Logic for 30-day one-time access
+        const paidUntil = new Date();
+        paidUntil.setDate(paidUntil.getDate() + 30);
+
+        try {
+          const { error } = await supabase
+            .from("subscriptions")
+            .upsert({
+              user_id: userId,
+              is_active: true,
+              paid_until: paidUntil.toISOString(),
+              updated_at: new Date().toISOString()
+            });
+
+          if (error) throw error;
+
+          alert("Payment successful. Your Pro access is now active for 30 days.");
+          window.location.reload(); // Refresh to update global access state
+        } catch (err: any) {
+          console.error("Subscription update failed:", err);
+          alert("Payment succeeded but we couldn't update your account. Please contact support with your Payment ID: " + response.razorpay_payment_id);
+        }
       }
     };
 
@@ -51,7 +77,7 @@ const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhon
         
         <div className="space-y-4">
           <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 rotate-3">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 00-2 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
           </div>
           <h3 className="text-3xl font-black text-gray-900 tracking-tight leading-tight">
             {isHardLock ? 'Trial Ended.' : 'Unlock Pro.'}
@@ -63,14 +89,13 @@ const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhon
 
         <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 text-left space-y-4">
           <div className="flex justify-between items-baseline">
-            <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Solo Professional</p>
+            <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">30-Day Access</p>
             <div className="flex items-baseline gap-1">
               <span className="text-3xl font-black text-gray-900">₹499</span>
-              <span className="text-xs font-bold text-gray-400">/mo</span>
             </div>
           </div>
           <ul className="space-y-2">
-            {['Unlimited Leads & History', 'Smart Follow-up Alerts', 'Direct WhatsApp Linking'].map(item => (
+            {['Unlimited Leads & History', 'Smart Follow-up Alerts', 'Direct WhatsApp Linking', 'One-time Payment (No Auto-billing)'].map(item => (
               <li key={item} className="flex items-center gap-2 text-xs font-bold text-gray-600">
                 <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
                 {item}
@@ -81,7 +106,7 @@ const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhon
 
         <div className="flex flex-col gap-4">
           <button onClick={handlePayment} className="w-full py-5 bg-gray-900 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-gray-200 hover:-translate-y-1 transition-all active:scale-95">
-            Activate Pro Workspace
+            Pay ₹499 to Unlock
           </button>
           {!isHardLock && (
             <button onClick={onCancel} className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-gray-600">
@@ -91,7 +116,7 @@ const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhon
         </div>
         
         <p className="text-[9px] text-gray-300 font-bold uppercase tracking-widest pt-4 italic">
-          Secure payment processed via Razorpay
+          Secure one-time payment via Razorpay
         </p>
       </div>
     </div>
