@@ -1,5 +1,5 @@
 
-import { Lead } from './types';
+import { Lead, Profile } from './types';
 
 const STORAGE_KEY = 'solo_agent_crm_data';
 
@@ -28,17 +28,11 @@ export const formatDate = (dateString: string) => {
   }).format(new Date(dateString));
 };
 
-/**
- * Checks if a date is in the past relative to now
- */
 export const isOverdue = (dateString: string) => {
   if (!dateString) return false;
   return new Date(dateString) < new Date();
 };
 
-/**
- * Checks if a date falls on the current day in IST
- */
 export const isToday = (dateString: string) => {
   if (!dateString) return false;
   const today = new Intl.DateTimeFormat('en-IN', {
@@ -64,10 +58,6 @@ export const getWhatsAppLink = (phone: string, name: string) => {
   return `https://wa.me/${cleanPhone}?text=${message}`;
 };
 
-/**
- * Generates a local ISO-style string (YYYY-MM-DDTHH:mm) for IST
- * specifically for <input type="datetime-local">
- */
 export const getQuickDate = (type: '2h' | 'tomorrow' | '3d') => {
   const now = new Date();
   
@@ -88,13 +78,23 @@ export const getQuickDate = (type: '2h' | 'tomorrow' | '3d') => {
 };
 
 /**
- * Trial Calculation Helpers
+ * Access Logic Helpers (STEP 1)
  */
-export const isTrialExpired = (createdAt: string | undefined) => {
+export const isTrialActive = (createdAt: string | undefined): boolean => {
   if (!createdAt) return false;
   const createdDate = new Date(createdAt);
-  const expiryDate = new Date(createdDate.getTime() + 7 * 24 * 60 * 60 * 1000);
-  return new Date() > expiryDate;
+  const trialExpiry = new Date(createdDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+  return new Date() < trialExpiry;
+};
+
+export const isPaidActive = (paidUntil: string | null | undefined): boolean => {
+  if (!paidUntil) return false;
+  return new Date() < new Date(paidUntil);
+};
+
+export const canUserAccessApp = (profile: Profile | null): boolean => {
+  if (!profile) return true; // Default allow during loading/setup
+  return isTrialActive(profile.created_at) || isPaidActive(profile.subscription?.paid_until);
 };
 
 export const getTrialDaysLeft = (createdAt: string | undefined) => {

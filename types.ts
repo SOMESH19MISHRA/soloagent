@@ -59,12 +59,19 @@ export interface Lead {
   createdAt: string;
 }
 
+export interface Subscription {
+  user_id: string;
+  is_active: boolean;
+  paid_until: string | null;
+  updated_at?: string;
+}
+
 export interface Profile {
   id: string;
   full_name: string;
   phone: string;
-  is_active: boolean;
   created_at?: string;
+  subscription?: Subscription;
 }
 
 export type View = 'dashboard' | 'leads' | 'lead-detail' | 'add-lead' | 'profile-setup' | 'profile' | 'feedback';

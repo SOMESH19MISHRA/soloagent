@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Lead, View, Profile as ProfileType } from './types';
 import { supabase } from './supabaseClient';
@@ -13,7 +14,7 @@ import LandingPage from './components/LandingPage';
 import Profile from './components/Profile';
 import Feedback from './components/Feedback';
 import Paywall from './components/Paywall';
-import { isTrialExpired, loadLeads, saveLeads } from './utils';
+import { canUserAccessApp, loadLeads, saveLeads } from './utils';
 
 const App: React.FC = () => {
   const [session, setSession] = useState<any>(null);
@@ -26,13 +27,11 @@ const App: React.FC = () => {
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('signup');
   const [isLocalMode, setIsLocalMode] = useState(false);
 
-  const hasAccess = profile ? (profile.is_active || !isTrialExpired(profile.created_at)) : true;
+  // Core Access Gate
+  const hasAccess = canUserAccessApp(profile);
 
   useEffect(() => {
-    // If supabase keys are missing from .env, we flag Local Mode for data handling
-    // but we still want to show the Auth gate to the user.
     if (!supabase) {
-      console.warn("Supabase client is null. Check your .env keys.");
       setIsLocalMode(true);
       setLeads(loadLeads());
       setLoading(false);
@@ -80,7 +79,7 @@ const App: React.FC = () => {
     try {
       const [profileRes, subRes] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
-        supabase.from('subscriptions').select('is_active').eq('user_id', userId).maybeSingle()
+        supabase.from('subscriptions').select('*').eq('user_id', userId).maybeSingle()
       ]);
 
       if (profileRes.error) throw profileRes.error;
@@ -97,15 +96,14 @@ const App: React.FC = () => {
           id: userId, 
           full_name: profileData?.full_name || '', 
           phone: profileData?.phone || '', 
-          is_active: subData?.is_active || false,
-          created_at: profileData?.created_at
+          created_at: profileData?.created_at,
+          subscription: subData || undefined
         });
         setCurrentView('profile-setup');
       } else {
         setProfile({ 
           ...profileData, 
-          is_active: subData?.is_active || false,
-          created_at: profileData.created_at 
+          subscription: subData || undefined
         });
         
         const { data: leadsData, error: leadsError } = await supabase
@@ -119,7 +117,7 @@ const App: React.FC = () => {
           ...l,
           fullName: l.name,
           interestType: l.interest,
-          notes: (l.notes || []).map((n: any) => ({ ...n, createdAt: n.created_at })).sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+          notes: (l.notes || []).map((n: any) => ({ ...n, createdAt: n.created_at })),
           followUps: (l.followups || []).map((f: any) => ({ 
             ...f, 
             date: f.followup_at,
@@ -171,25 +169,12 @@ const App: React.FC = () => {
     setCurrentView('leads');
   };
 
-  const handleStart = () => {
-    setAuthMode('signup');
-    setShowLanding(false);
-  };
-
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-white text-center">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-        <p className="font-black text-xs uppercase tracking-widest text-gray-400">Syncing Workspace...</p>
-      </div>
-    </div>
-  );
+  if (loading) return null;
 
   if (showLanding) {
-    return <LandingPage onStart={handleStart} onLogin={() => { setAuthMode('login'); setShowLanding(false); }} />;
+    return <LandingPage onStart={() => { setAuthMode('signup'); setShowLanding(false); }} onLogin={() => { setAuthMode('login'); setShowLanding(false); }} />;
   }
 
-  // Mandatory Auth Gate: If no session, always show Auth.
   if (!session) {
     return <Auth initialMode={authMode} onBack={() => setShowLanding(true)} />;
   }
@@ -197,8 +182,6 @@ const App: React.FC = () => {
   const renderView = () => {
     if (currentView === 'profile-setup') return <ProfileSetup onComplete={() => fetchUserData(session.user.id)} />;
     
-    const userContext = { profile, email: session?.user?.email || 'user@soloagent.ai' };
-
     switch (currentView) {
       case 'dashboard':
         return <Dashboard profile={profile} leads={leads} onNavigateToLead={navigateToLead} onViewLeads={() => setCurrentView('leads')} />;
@@ -213,14 +196,14 @@ const App: React.FC = () => {
             onDelete={deleteLead}
             onBack={() => setCurrentView('leads')}
             isActive={hasAccess}
-            userContext={userContext}
+            userContext={{ profile, email: session.user.email }}
             isLocalMode={isLocalMode}
           />
-        ) : <div className="p-20 text-center font-bold text-gray-400">Lead not found.</div>;
+        ) : null;
       case 'add-lead':
-        return <LeadForm isActive={hasAccess} onSave={addLead} onCancel={() => setCurrentView('leads')} userContext={userContext} isLocalMode={isLocalMode} />;
+        return <LeadForm isActive={hasAccess} onSave={addLead} onCancel={() => setCurrentView('leads')} userContext={{ profile, email: session.user.email }} isLocalMode={isLocalMode} />;
       case 'profile':
-        return <Profile profile={profile} email={userContext.email} onUpdate={(u) => setProfile(u)} isLocalMode={isLocalMode} />;
+        return <Profile profile={profile} email={session.user.email} onUpdate={(u) => setProfile(u)} isLocalMode={isLocalMode} />;
       case 'feedback':
         return <Feedback isLocalMode={isLocalMode} />;
       default:
@@ -229,7 +212,8 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50 pb-20 md:pb-0">
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-100 pb-24 md:pb-0">
+      {/* GLOBAL PAYWALL GATE */}
       {!isLocalMode && !hasAccess && currentView !== 'profile' && currentView !== 'feedback' && (
         <Paywall 
           onCancel={() => {}} 
@@ -241,22 +225,11 @@ const App: React.FC = () => {
       )}
       
       <div className="hidden md:block">
-        <Sidebar 
-          currentView={currentView} 
-          setView={setCurrentView} 
-          onLogout={() => supabase?.auth.signOut()} 
-        />
+        <Sidebar currentView={currentView} setView={setCurrentView} onLogout={() => supabase?.auth.signOut()} />
       </div>
-
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto relative">
-        {isLocalMode && (
-          <div className="fixed bottom-24 md:bottom-4 right-4 bg-amber-100 text-amber-700 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border border-amber-200 z-[60] shadow-sm">
-            Cloud Connection Warning
-          </div>
-        )}
+      <main className="flex-1 p-4 md:p-10 overflow-y-auto relative">
         {renderView()}
       </main>
-
       <div className="md:hidden">
         <BottomNav currentView={currentView} setView={setCurrentView} />
       </div>

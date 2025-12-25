@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Profile as ProfileType } from '../types';
 import { supabase } from '../supabaseClient';
@@ -89,7 +90,8 @@ const Profile: React.FC<ProfileProps> = ({ profile, email, onUpdate, isLocalMode
             <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Plan Status</label>
             <div className="px-4 py-3 bg-blue-50 border border-blue-100 rounded-xl">
               <span className="text-sm font-black text-blue-600 uppercase tracking-widest">
-                {isLocalMode ? 'Local Lifetime' : (profile?.is_active ? 'Active Pro' : 'Free Trial')}
+                {/* Fix: Property 'is_active' does not exist on type 'Profile', it exists on 'Profile.subscription' */}
+                {isLocalMode ? 'Local Lifetime' : (profile?.subscription?.is_active ? 'Active Pro' : 'Free Trial')}
               </span>
             </div>
           </div>
