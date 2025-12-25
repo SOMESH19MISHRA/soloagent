@@ -1,8 +1,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// Accessing environment variables via process.env
-// Using process.env instead of import.meta.env to fix TypeScript errors in this environment
+// Switched to process.env as import.meta.env was undefined in this environment
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
 

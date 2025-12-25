@@ -12,27 +12,26 @@ interface PaywallProps {
 
 const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhone, isHardLock = false }) => {
   const handlePayment = async () => {
-    console.log("Initiating Razorpay payment flow...");
+    console.log("Starting Razorpay payment flow...");
 
-    // Pulls from environment variables
-    // Using process.env instead of import.meta.env to fix TypeScript errors in this environment
+    // Switched to process.env for environment variable access
     const RAZORPAY_KEY = process.env.VITE_RAZORPAY_KEY_ID; 
     
+    console.log("Razorpay Key Status:", RAZORPAY_KEY ? "Present" : "MISSING");
+    console.log("Razorpay SDK Status:", (window as any).Razorpay ? "LOADED" : "NOT LOADED");
+
     if (!RAZORPAY_KEY) {
-      console.error("VITE_RAZORPAY_KEY_ID is missing from environment variables.");
-      alert("Payment configuration error. Please contact support.");
+      alert("Razorpay key (VITE_RAZORPAY_KEY_ID) is missing from environment variables.");
       return;
     }
 
     if (!(window as any).Razorpay) {
-      console.error("Razorpay SDK not found on window object.");
-      alert("Payment gateway failed to load. Please check your internet connection and refresh.");
+      alert("Razorpay SDK not found on window object. Please refresh the page.");
       return;
     }
 
     if (!userId || !supabase) {
-      console.error("Missing User ID or Supabase client instance.");
-      alert("Authentication error. Please log in again.");
+      alert("Authentication error: No active session or Supabase client. Please log in again.");
       return;
     }
 
@@ -56,7 +55,7 @@ const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhon
         }
       },
       handler: async function(response: any) {
-        console.log("Payment successful, updating subscription...", response);
+        console.log("Payment successful! Response:", response);
         
         // Calculate 30-day access from right now
         const paidUntil = new Date();
@@ -74,23 +73,23 @@ const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhon
 
           if (error) throw error;
 
-          console.log("Subscription updated successfully.");
+          console.log("Subscription updated successfully in Supabase.");
           alert("Payment successful! Your Pro access is now active for 30 days.");
-          window.location.reload(); // Hard refresh to unlock the UI
+          window.location.reload(); // Refresh to update global access state
         } catch (err: any) {
-          console.error("Failed to update subscription in database:", err);
-          alert("Payment was successful (ID: " + response.razorpay_payment_id + "), but we couldn't update your account. Please send this ID to support via WhatsApp.");
+          console.error("CRITICAL: Payment succeeded but Supabase update failed:", err);
+          alert(`Payment succeeded (ID: ${response.razorpay_payment_id}) but we couldn't update your account. Please contact support with this ID.`);
         }
       }
     };
 
     try {
-      console.log("Opening Razorpay modal with Key:", RAZORPAY_KEY);
+      console.log("Opening Razorpay Modal...");
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
     } catch (e) {
-      console.error("Error creating or opening Razorpay instance:", e);
-      alert("Could not open payment window. Please try again.");
+      console.error("Fatal error creating Razorpay instance:", e);
+      alert("Could not open payment window. Check console for details.");
     }
   };
 
@@ -144,7 +143,7 @@ const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhon
         </div>
         
         <p className="text-[9px] text-gray-300 font-bold uppercase tracking-widest pt-4 italic">
-          No subscriptions • No hidden fees • One-time payment
+          No subscriptions • One-time payment via Razorpay
         </p>
       </div>
     </div>
