@@ -36,7 +36,7 @@ const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhon
 
     const options = {
       key: RAZORPAY_KEY,
-      amount: 100, // ₹1.00 (amount in paise)
+      amount: 49900, // ₹499.00 (amount in paise)
       currency: "INR",
       name: "SoloAgent Pro",
       description: "30-Day Professional Access",
@@ -110,7 +110,7 @@ const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhon
           <div className="flex justify-between items-baseline">
             <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">30-Day Pass</p>
             <div className="flex items-baseline gap-1">
-              <span className="text-3xl font-black text-gray-900">₹1</span>
+              <span className="text-3xl font-black text-gray-900">₹499</span>
             </div>
           </div>
           <ul className="space-y-2">
@@ -124,12 +124,18 @@ const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhon
         </div>
 
         <div className="flex flex-col gap-4">
+          <p className="text-[10px] font-black text-gray-900 uppercase tracking-widest">
+            ₹499 · 30-day pass
+          </p>
           <button 
             onClick={handlePayment} 
             className="w-full py-5 bg-gray-900 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-gray-200 hover:-translate-y-1 transition-all active:scale-95"
           >
-            Unlock Now for ₹1
+            Unlock Now for ₹499
           </button>
+          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+            One-time payment · No auto-renew
+          </p>
           {!isHardLock && (
             <button onClick={onCancel} className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-gray-600">
               Maybe later

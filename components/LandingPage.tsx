@@ -213,13 +213,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin }) => {
         <div className="max-w-md mx-auto px-6 text-center">
           <h2 className="text-4xl font-black mb-12">Simple pricing.</h2>
           <div className="bg-white rounded-[40px] p-12 shadow-2xl text-gray-900">
-            <div className="flex items-baseline justify-center gap-1 mb-8">
-              <span className="text-7xl font-black">₹1</span>
-              <span className="text-xl font-bold text-gray-400">/mo</span>
+            <div className="flex items-baseline justify-center gap-1 mb-2">
+              <span className="text-7xl font-black">₹499</span>
             </div>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-8">
+              30-Day Pass · One-time payment
+            </p>
             <div className="space-y-4 mb-10 text-gray-700 font-bold">
               <p className="text-blue-600">7-day free trial</p>
-              <p>Cancel anytime.</p>
+              <p>No auto-renew. No credit card required to start.</p>
             </div>
             <button 
               onClick={onStart}
@@ -228,7 +230,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin }) => {
               Start Free Trial
             </button>
             <p className="mt-8 text-xs text-gray-500 font-black leading-relaxed uppercase tracking-widest">
-              No free forever plan. Built for serious agents.
+              Professional access. Built for serious agents.
             </p>
           </div>
         </div>
