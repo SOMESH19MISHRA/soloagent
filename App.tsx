@@ -29,8 +29,6 @@ const App: React.FC = () => {
   const hasAccess = profile ? (profile.is_active || !isTrialExpired(profile.created_at)) : true;
 
   useEffect(() => {
-    // If supabase keys are missing from .env, we flag Local Mode for data handling
-    // but we still want to show the Auth gate to the user.
     if (!supabase) {
       console.warn("Supabase client is null. Check your .env keys.");
       setIsLocalMode(true);
@@ -177,10 +175,10 @@ const App: React.FC = () => {
   };
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-white text-center">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-        <p className="font-black text-xs uppercase tracking-widest text-gray-400">Syncing Workspace...</p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 text-center">
+      <div className="flex flex-col items-center gap-6">
+        <div className="w-14 h-14 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <p className="font-black text-sm uppercase tracking-[0.2em] text-gray-900">Syncing Workspace...</p>
       </div>
     </div>
   );
@@ -189,7 +187,6 @@ const App: React.FC = () => {
     return <LandingPage onStart={handleStart} onLogin={() => { setAuthMode('login'); setShowLanding(false); }} />;
   }
 
-  // Mandatory Auth Gate: If no session, always show Auth.
   if (!session) {
     return <Auth initialMode={authMode} onBack={() => setShowLanding(true)} />;
   }
@@ -216,7 +213,7 @@ const App: React.FC = () => {
             userContext={userContext}
             isLocalMode={isLocalMode}
           />
-        ) : <div className="p-20 text-center font-bold text-gray-400">Lead not found.</div>;
+        ) : <div className="p-20 text-center font-bold text-gray-500">Lead not found.</div>;
       case 'add-lead':
         return <LeadForm isActive={hasAccess} onSave={addLead} onCancel={() => setCurrentView('leads')} userContext={userContext} isLocalMode={isLocalMode} />;
       case 'profile':
@@ -229,7 +226,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50 pb-20 md:pb-0">
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-100 pb-24 md:pb-0">
       {!isLocalMode && !hasAccess && currentView !== 'profile' && currentView !== 'feedback' && (
         <Paywall 
           onCancel={() => {}} 
@@ -248,10 +245,10 @@ const App: React.FC = () => {
         />
       </div>
 
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto relative">
+      <main className="flex-1 p-4 md:p-10 overflow-y-auto relative">
         {isLocalMode && (
-          <div className="fixed bottom-24 md:bottom-4 right-4 bg-amber-100 text-amber-700 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border border-amber-200 z-[60] shadow-sm">
-            Cloud Connection Warning
+          <div className="fixed bottom-24 md:bottom-6 right-6 bg-amber-100 text-amber-900 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest border border-amber-300 z-[60] shadow-xl">
+            Offline Mode Active
           </div>
         )}
         {renderView()}
