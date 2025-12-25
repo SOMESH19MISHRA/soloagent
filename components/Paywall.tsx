@@ -12,22 +12,20 @@ interface PaywallProps {
 
 const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhone, isHardLock = false }) => {
   const handlePayment = async () => {
-    console.log("Starting Razorpay payment flow...");
-    console.log("DEBUG PAYMENT AMOUNT", options.amount);
-    alert("Charging amount: " + options.amount);
+    console.log("Initiating Razorpay payment flow...");
 
-
-    // Fix: Accessing environment variables via process.env instead of import.meta.env
-    const RAZORPAY_KEY = process.env.VITE_RAZORPAY_KEY_ID; 
+    // Vite environment variables must be accessed via import.meta.env
+    const env = (import.meta as any).env;
+    const RAZORPAY_KEY = env?.VITE_RAZORPAY_KEY_ID; 
     
     if (!RAZORPAY_KEY) {
-      console.error("VITE_RAZORPAY_KEY_ID is missing.");
-      alert("Payment Error: Razorpay Key not found. If you just added this to Vercel, please trigger a 'Redeploy'.");
+      console.error("VITE_RAZORPAY_KEY_ID is missing from environment variables.");
+      alert("Configuration Error: Razorpay Key not found. If you are on Vercel, check your Environment Variables and redeploy.");
       return;
     }
 
     if (!(window as any).Razorpay) {
-      alert("Razorpay SDK not loaded. Please ensure you are online and refresh the page.");
+      alert("Razorpay SDK not loaded. Please check your internet connection and refresh.");
       return;
     }
 
