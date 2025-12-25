@@ -14,14 +14,12 @@ const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhon
   const handlePayment = async () => {
     console.log("Starting Razorpay payment flow...");
 
-    // Accessing environment variables via Vite-standard syntax
-    const RAZORPAY_KEY = (import.meta as any).env?.VITE_RAZORPAY_KEY_ID; 
+    // Fix: Accessing environment variables via process.env instead of import.meta.env
+    const RAZORPAY_KEY = process.env.VITE_RAZORPAY_KEY_ID; 
     
-    console.log("Razorpay Key Status:", RAZORPAY_KEY ? "Found" : "MISSING");
-    console.log("Razorpay SDK Status:", (window as any).Razorpay ? "Loaded" : "NOT LOADED");
-
     if (!RAZORPAY_KEY) {
-      alert("Razorpay key (VITE_RAZORPAY_KEY_ID) is missing from environment variables.");
+      console.error("VITE_RAZORPAY_KEY_ID is missing.");
+      alert("Payment Error: Razorpay Key not found. If you just added this to Vercel, please trigger a 'Redeploy'.");
       return;
     }
 
@@ -37,7 +35,7 @@ const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhon
 
     const options = {
       key: RAZORPAY_KEY,
-      amount: 100, // ₹1.00 (amount in paise)(for testing)
+      amount: 100, // ₹1.00 (amount in paise)
       currency: "INR",
       name: "SoloAgent Pro",
       description: "30-Day Professional Access",
@@ -57,7 +55,6 @@ const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhon
       handler: async function(response: any) {
         console.log("Payment successful! Updating subscription...", response.razorpay_payment_id);
         
-        // Calculate 30-day access from right now
         const paidUntil = new Date();
         paidUntil.setDate(paidUntil.getDate() + 30);
 
@@ -73,9 +70,8 @@ const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhon
 
           if (error) throw error;
 
-          console.log("Access updated successfully.");
           alert("Payment successful! Your Pro access is now active for 30 days.");
-          window.location.reload(); // Hard refresh to update global state
+          window.location.reload(); 
         } catch (err: any) {
           console.error("Subscription update failed:", err);
           alert(`Payment succeeded (ID: ${response.razorpay_payment_id}) but access update failed. Please contact support.`);
@@ -113,7 +109,7 @@ const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhon
           <div className="flex justify-between items-baseline">
             <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">30-Day Pass</p>
             <div className="flex items-baseline gap-1">
-              <span className="text-3xl font-black text-gray-900">₹499</span>
+              <span className="text-3xl font-black text-gray-900">₹1</span>
             </div>
           </div>
           <ul className="space-y-2">
@@ -131,7 +127,7 @@ const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhon
             onClick={handlePayment} 
             className="w-full py-5 bg-gray-900 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-gray-200 hover:-translate-y-1 transition-all active:scale-95"
           >
-            Unlock Now for ₹499
+            Unlock Now for ₹1
           </button>
           {!isHardLock && (
             <button onClick={onCancel} className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-gray-600">

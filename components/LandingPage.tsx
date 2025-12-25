@@ -214,7 +214,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin }) => {
           <h2 className="text-4xl font-black mb-12">Simple pricing.</h2>
           <div className="bg-white rounded-[40px] p-12 shadow-2xl text-gray-900">
             <div className="flex items-baseline justify-center gap-1 mb-8">
-              <span className="text-7xl font-black">₹499</span>
+              <span className="text-7xl font-black">₹1</span>
               <span className="text-xl font-bold text-gray-400">/mo</span>
             </div>
             <div className="space-y-4 mb-10 text-gray-700 font-bold">

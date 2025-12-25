@@ -43,7 +43,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, profile, onNavigateToLead,
               {!trialActive ? 'Your free trial has ended.' : `${trialDaysLeft} days remaining in your free trial.`}
             </p>
           </div>
-          {!trialActive && <span className="text-xs font-black underline cursor-pointer hover:text-red-700">Upgrade to Pro (₹499)</span>}
+          {!trialActive && <span className="text-xs font-black underline cursor-pointer hover:text-red-700">Upgrade to Pro (₹1)</span>}
         </div>
       )}
 
