@@ -37,7 +37,7 @@ const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhon
 
     const options = {
       key: RAZORPAY_KEY,
-      amount: 49900, // ₹499.00 (amount in paise)
+      amount: 100, // ₹1.00 (amount in paise)(for testing)
       currency: "INR",
       name: "SoloAgent Pro",
       description: "30-Day Professional Access",
