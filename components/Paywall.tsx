@@ -14,11 +14,11 @@ const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhon
   const handlePayment = async () => {
     console.log("Starting Razorpay payment flow...");
 
-    // Switched to process.env for environment variable access
-    const RAZORPAY_KEY = process.env.VITE_RAZORPAY_KEY_ID; 
+    // Accessing environment variables via Vite-standard syntax
+    const RAZORPAY_KEY = (import.meta as any).env?.VITE_RAZORPAY_KEY_ID; 
     
-    console.log("Razorpay Key Status:", RAZORPAY_KEY ? "Present" : "MISSING");
-    console.log("Razorpay SDK Status:", (window as any).Razorpay ? "LOADED" : "NOT LOADED");
+    console.log("Razorpay Key Status:", RAZORPAY_KEY ? "Found" : "MISSING");
+    console.log("Razorpay SDK Status:", (window as any).Razorpay ? "Loaded" : "NOT LOADED");
 
     if (!RAZORPAY_KEY) {
       alert("Razorpay key (VITE_RAZORPAY_KEY_ID) is missing from environment variables.");
@@ -26,12 +26,12 @@ const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhon
     }
 
     if (!(window as any).Razorpay) {
-      alert("Razorpay SDK not found on window object. Please refresh the page.");
+      alert("Razorpay SDK not loaded. Please ensure you are online and refresh the page.");
       return;
     }
 
     if (!userId || !supabase) {
-      alert("Authentication error: No active session or Supabase client. Please log in again.");
+      alert("Session error. Please log in again to continue.");
       return;
     }
 
@@ -51,11 +51,11 @@ const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhon
       theme: { color: "#2563eb" },
       modal: {
         ondismiss: function() {
-          console.log("Payment modal dismissed by user.");
+          console.log("Payment modal closed by user.");
         }
       },
       handler: async function(response: any) {
-        console.log("Payment successful! Response:", response);
+        console.log("Payment successful! Updating subscription...", response.razorpay_payment_id);
         
         // Calculate 30-day access from right now
         const paidUntil = new Date();
@@ -73,23 +73,22 @@ const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhon
 
           if (error) throw error;
 
-          console.log("Subscription updated successfully in Supabase.");
+          console.log("Access updated successfully.");
           alert("Payment successful! Your Pro access is now active for 30 days.");
-          window.location.reload(); // Refresh to update global access state
+          window.location.reload(); // Hard refresh to update global state
         } catch (err: any) {
-          console.error("CRITICAL: Payment succeeded but Supabase update failed:", err);
-          alert(`Payment succeeded (ID: ${response.razorpay_payment_id}) but we couldn't update your account. Please contact support with this ID.`);
+          console.error("Subscription update failed:", err);
+          alert(`Payment succeeded (ID: ${response.razorpay_payment_id}) but access update failed. Please contact support.`);
         }
       }
     };
 
     try {
-      console.log("Opening Razorpay Modal...");
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
     } catch (e) {
-      console.error("Fatal error creating Razorpay instance:", e);
-      alert("Could not open payment window. Check console for details.");
+      console.error("Razorpay construction error:", e);
+      alert("Failed to initiate payment. See console for details.");
     }
   };
 
@@ -106,20 +105,19 @@ const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhon
             {isHardLock ? 'Trial Ended.' : 'Unlock Pro.'}
           </h3>
           <p className="text-gray-500 font-medium">
-            Continue managing your pipeline and follow-ups without missing a single deal.
+            Manage your leads professionally without interruptions.
           </p>
         </div>
 
         <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 text-left space-y-4">
           <div className="flex justify-between items-baseline">
-            <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">One-Time Unlock</p>
+            <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">30-Day Pass</p>
             <div className="flex items-baseline gap-1">
               <span className="text-3xl font-black text-gray-900">₹499</span>
-              <span className="text-xs font-bold text-gray-400">/30 days</span>
             </div>
           </div>
           <ul className="space-y-2">
-            {['Unlimited Leads & Action History', 'Automated Follow-up Alerts', 'Direct WhatsApp Shortcuts', 'Secure Payments via Razorpay'].map(item => (
+            {['Unlimited Lead Tracking', 'Priority Follow-up Alerts', 'WhatsApp Integration', 'No Subscriptions'].map(item => (
               <li key={item} className="flex items-center gap-2 text-xs font-bold text-gray-600">
                 <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
                 {item}
@@ -133,7 +131,7 @@ const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhon
             onClick={handlePayment} 
             className="w-full py-5 bg-gray-900 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-gray-200 hover:-translate-y-1 transition-all active:scale-95"
           >
-            Pay ₹499 to Unlock
+            Unlock Now for ₹499
           </button>
           {!isHardLock && (
             <button onClick={onCancel} className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-gray-600">
@@ -143,7 +141,7 @@ const Paywall: React.FC<PaywallProps> = ({ onCancel, userId, userEmail, userPhon
         </div>
         
         <p className="text-[9px] text-gray-300 font-bold uppercase tracking-widest pt-4 italic">
-          No subscriptions • One-time payment via Razorpay
+          Secure one-time payment via Razorpay
         </p>
       </div>
     </div>

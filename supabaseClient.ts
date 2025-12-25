@@ -1,9 +1,10 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// Switched to process.env as import.meta.env was undefined in this environment
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+// Vite environment variables must be accessed via import.meta.env
+// We use optional chaining and a cast to ensure compatibility in varied build environments
+const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL;
+const supabaseAnonKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY;
 
 // Export the client if keys exist, otherwise null (triggers Local Mode in App.tsx)
 export const supabase = (supabaseUrl && supabaseAnonKey) 
