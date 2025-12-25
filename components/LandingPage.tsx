@@ -7,11 +7,11 @@ interface LandingPageProps {
 }
 
 const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin }) => {
-  const whatsappNumber = "917987376314"; 
-  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent("Hi Somesh, I found SoloAgent and wanted to know if it’s right for my real estate work.")}`;
+  const whatsappNumber = "910000000000"; // Replace with real support number
+  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent("Hi, I'm interested in SoloAgent. Can you help me get started?")}`;
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 selection:bg-blue-100 font-sans">
+    <div className="min-h-screen bg-white text-gray-900 selection:bg-blue-100">
       {/* Navigation */}
       <nav className="max-w-7xl mx-auto px-6 py-8 flex justify-between items-center">
         <div className="flex items-center gap-2">
@@ -19,24 +19,24 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin }) => {
           <span className="font-black text-2xl tracking-tighter">SoloAgent</span>
         </div>
         <div className="flex items-center gap-6">
-          <button onClick={onLogin} className="text-sm font-black uppercase tracking-widest text-gray-600 hover:text-gray-900 transition-colors">Login</button>
+          <button onClick={onLogin} className="text-sm font-black uppercase tracking-widest text-gray-500 hover:text-gray-900 transition-colors">Login</button>
           <button onClick={onStart} className="bg-gray-900 text-white px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest shadow-xl shadow-gray-200 hover:-translate-y-0.5 transition-all">Start Free</button>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <header className="max-w-5xl mx-auto px-6 pt-20 pb-32 text-center md:text-left">
-        <h1 className="text-5xl md:text-8xl font-black leading-[0.95] tracking-tighter mb-8">
+      <header className="max-w-4xl mx-auto px-6 pt-20 pb-32 text-center md:text-left">
+        <h1 className="text-6xl md:text-8xl font-black leading-[0.9] tracking-tighter mb-8">
           Never miss a follow-up.<br/>
           <span className="text-blue-600">Never lose a commission.</span>
         </h1>
-        <p className="text-xl md:text-2xl text-gray-700 font-medium max-w-2xl mb-12 leading-relaxed">
-          A simple follow-up tracker for solo real estate agents. Remember who to call next — without complicated systems.
+        <p className="text-xl md:text-2xl text-gray-500 font-medium max-w-2xl mb-12 leading-relaxed">
+          A simple follow-up tracker for solo real estate agents. No complicated systems. Just a clear way to remember who to call next.
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start items-center">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
           <button 
             onClick={onStart}
-            className="w-full sm:w-auto bg-blue-600 text-white px-10 py-6 rounded-2xl text-lg font-black uppercase tracking-widest shadow-2xl shadow-blue-200 hover:-translate-y-1 transition-all active:scale-95"
+            className="bg-blue-600 text-white px-10 py-6 rounded-2xl text-lg font-black uppercase tracking-widest shadow-2xl shadow-blue-200 hover:-translate-y-1 transition-all active:scale-95"
           >
             Try it Free for 7 Days
           </button>
@@ -44,210 +44,122 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin }) => {
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full sm:w-auto bg-white border-2 border-gray-300 text-gray-900 px-10 py-6 rounded-2xl text-lg font-black uppercase tracking-widest hover:border-blue-600 hover:text-blue-600 transition-all flex items-center justify-center gap-3 shadow-md"
+            className="bg-white border-2 border-gray-100 text-gray-900 px-10 py-6 rounded-2xl text-lg font-black uppercase tracking-widest hover:border-blue-600 hover:text-blue-600 transition-all flex items-center justify-center gap-3"
           >
-            Chat with the Founder on WhatsApp
+            Connect on WhatsApp
           </a>
         </div>
-        <p className="mt-6 text-[11px] font-black text-gray-600 uppercase tracking-widest text-center md:text-left">
-          Early-stage product • Direct conversation • Feedback welcome
-        </p>
       </header>
 
       {/* Problem Section */}
-      <section className="bg-gray-100 py-32 border-y border-gray-300 shadow-inner">
+      <section className="bg-gray-50 py-32 border-y border-gray-100">
         <div className="max-w-4xl mx-auto px-6">
-          <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-10 text-gray-900">
-            Following up shouldn’t be this hard.
+          <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-8">
+            When follow-ups get buried in WhatsApp,<br/>
+            the deal goes to someone else.
           </h2>
-          <div className="space-y-8 text-xl text-gray-700 font-medium leading-relaxed">
-            <p>If you’re a solo agent, this probably sounds familiar:</p>
-            <ul className="space-y-6">
+          <div className="grid md:grid-cols-2 gap-12 text-lg text-gray-500 font-medium leading-relaxed">
+            <p>
+              You speak to dozens of clients every week. Between site visits, calls, and hundreds of WhatsApp messages, even the best agents forget to follow up. It's not your fault—it's just too much to remember.
+            </p>
+            <ul className="space-y-4">
               {[
-                "Leads come from calls, WhatsApp, referrals",
-                "You tell yourself “I’ll call them later”",
-                "A day turns into a week",
-                "The deal quietly dies because you forgot to follow up"
+                "Important chats get pushed down",
+                "Promised calls are missed",
+                "Leads go cold without a reminder"
               ].map((text, i) => (
-                <li key={i} className="flex items-start gap-4 text-gray-900 font-bold">
-                  <span className="shrink-0 mt-1.5 w-2.5 h-2.5 bg-red-600 rounded-full"></span>
+                <li key={i} className="flex items-center gap-3 text-gray-900 font-bold">
+                  <span className="w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-[10px]">✓</span>
                   {text}
                 </li>
               ))}
             </ul>
-            <p className="pt-4 text-gray-900 font-bold border-l-4 border-gray-900 pl-6">
-              It’s not because you’re bad at selling. It’s because follow-ups slip through the cracks.
-            </p>
           </div>
         </div>
       </section>
 
       {/* Solution Section */}
       <section className="py-32">
-        <div className="max-w-4xl mx-auto px-6">
-          <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-8">SoloAgent does one thing well.</h2>
-          <div className="grid md:grid-cols-2 gap-12 text-lg text-gray-700 font-medium leading-relaxed mb-16">
-            <div className="space-y-6">
-              <p>SoloAgent helps you keep track of:</p>
-              <ul className="space-y-4">
-                {["Who you need to follow up with", "When you should contact them next", "Which leads are overdue"].map((text, i) => (
-                  <li key={i} className="flex items-center gap-3 text-gray-900 font-bold">
-                    <span className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-[10px] font-black shadow-md">✓</span>
-                    {text}
-                  </li>
-                ))}
-              </ul>
-              <div className="pt-4">
-                <p className="text-gray-900 font-black">That’s all it does — by design.</p>
-              </div>
-            </div>
-            <div className="bg-blue-600 text-white p-8 rounded-3xl shadow-xl space-y-4">
-               <p className="text-blue-100 font-black uppercase tracking-widest text-xs">Simplicity First</p>
-               <ul className="space-y-2 font-bold text-sm">
-                 <li>• No pipelines.</li>
-                 <li>• No dashboards you never use.</li>
-                 <li>• No learning curve.</li>
-               </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How it Works Section */}
-      <section className="bg-gray-50 py-32 border-t border-gray-300">
-        <div className="max-w-4xl mx-auto px-6">
-          <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-16">How it works</h2>
-          <div className="grid md:grid-cols-3 gap-12">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <p className="text-blue-600 font-black uppercase tracking-[0.3em] text-xs mb-4">HOW IT WORKS</p>
+          <h2 className="text-4xl md:text-6xl font-black tracking-tight mb-10">One simple rule:<br/>Every lead has a next step.</h2>
+          <p className="text-xl md:text-2xl text-gray-500 font-medium mb-16 max-w-2xl mx-auto">
+            This app doesn't try to manage your business. It manages your memory. It tells you <span className="text-gray-900 font-black">who to call and when.</span>
+          </p>
+          <div className="grid md:grid-cols-3 gap-8">
             {[
-              { step: '01', title: 'Add a lead', desc: 'Name, phone number, area, budget. Takes 10 seconds.' },
-              { step: '02', title: 'Set the next step', desc: 'Call, message, or visit — with a date and time.' },
-              { step: '03', title: 'Open the app daily', desc: 'You immediately see who needs your attention.' }
-            ].map((item, i) => (
-              <div key={i} className="space-y-6 relative group bg-white p-8 rounded-3xl border border-gray-300 shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-14 h-14 bg-gray-900 text-white rounded-2xl flex items-center justify-center font-black text-xl shadow-xl shadow-gray-200 group-hover:bg-blue-600 group-hover:-translate-y-1 transition-all">
-                  {item.step}
-                </div>
-                <h3 className="text-2xl font-black text-gray-900">{item.title}</h3>
-                <p className="text-gray-700 font-bold text-base leading-relaxed">{item.desc}</p>
+              { title: 'Add in Seconds', desc: 'Quickly log the name, area, and budget of your new prospect.' },
+              { title: 'Set Next Step', desc: 'Pick a time for your next call or visit. We handle the reminder.' },
+              { title: 'One Daily List', desc: 'Open the app every morning to see exactly who needs a call.' }
+            ].map((step, i) => (
+              <div key={i} className="bg-white p-8 rounded-3xl border border-gray-100 shadow-xl shadow-gray-100/50 text-left">
+                <span className="text-4xl font-black text-blue-600 opacity-20">0{i+1}</span>
+                <h3 className="text-xl font-black mt-4 mb-2">{step.title}</h3>
+                <p className="text-gray-500 font-medium text-sm leading-relaxed">{step.desc}</p>
               </div>
             ))}
           </div>
-          <div className="mt-20 p-10 bg-gray-900 rounded-[2.5rem] border border-gray-800 italic text-gray-300 font-bold text-lg text-center shadow-2xl">
-            "If there’s no follow-up set, it shows up clearly. Nothing gets forgotten."
-          </div>
         </div>
       </section>
 
-      {/* Fit Section */}
-      <section className="py-32 bg-gray-100 border-y border-gray-300">
-        <div className="max-w-4xl mx-auto px-6">
-          <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-16 text-center text-gray-900">Is SoloAgent right for you?</h2>
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="bg-white p-8 rounded-3xl border border-gray-300 shadow-sm space-y-6">
-              <h3 className="text-emerald-700 font-black uppercase tracking-widest text-xs">Good fit if you are:</h3>
-              <ul className="space-y-4 text-lg font-bold text-gray-700">
-                <li className="flex items-center gap-3">
-                  <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
-                  A solo real estate agent
-                </li>
-                <li className="flex items-center gap-3">
-                  <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
-                  Managing leads on your own
-                </li>
-                <li className="flex items-center gap-3">
-                  <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
-                  Tired of memory-based follow-ups
-                </li>
-              </ul>
-            </div>
-            <div className="bg-white p-8 rounded-3xl border border-gray-300 shadow-sm space-y-6">
-              <h3 className="text-red-700 font-black uppercase tracking-widest text-xs">Not a fit if you want:</h3>
-              <ul className="space-y-4 text-lg font-bold text-gray-700">
-                <li className="flex items-center gap-3">
-                  <span className="w-2 h-2 bg-red-400 rounded-full"></span>
-                  A full CRM with teams
-                </li>
-                <li className="flex items-center gap-3">
-                  <span className="w-2 h-2 bg-red-400 rounded-full"></span>
-                  Marketing or analytics tools
-                </li>
-                <li className="flex items-center gap-3">
-                  <span className="w-2 h-2 bg-red-400 rounded-full"></span>
-                  Complex deal pipelines
-                </li>
-              </ul>
-            </div>
-          </div>
-          <p className="mt-16 text-center text-gray-900 font-black uppercase tracking-widest text-xs">
-            SoloAgent is intentionally simple.
+      {/* Positioning Section */}
+      <section className="bg-gray-900 text-white py-32 overflow-hidden relative">
+        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-96 h-96 bg-blue-600 rounded-full blur-[120px] opacity-20"></div>
+        <div className="max-w-4xl mx-auto px-6 relative z-10">
+          <h2 className="text-5xl md:text-7xl font-black tracking-tight mb-8">Not a CRM.<br/>An Assistant.</h2>
+          <p className="text-xl md:text-2xl text-gray-400 font-medium leading-relaxed max-w-2xl mb-12">
+            Most CRMs are too complicated for a solo agent. SoloAgent is built for <span className="text-white font-black">WhatsApp-first</span> agents who need a clean, simple way to track their next move.
           </p>
-        </div>
-      </section>
-
-      {/* Founder Section */}
-      <section className="py-32">
-        <div className="max-w-2xl mx-auto px-6 text-center">
-          <h2 className="text-4xl font-black tracking-tight mb-8 text-gray-900">Built by a real person.</h2>
-          <div className="space-y-6 text-xl text-gray-700 font-medium leading-relaxed">
-            <p>Hi, I’m <span className="text-blue-600 font-black">Somesh</span>.</p>
-            <p>
-              I built SoloAgent after seeing how often solo agents lose deals — not because of lack of effort, but because follow-ups get missed.
-            </p>
-            <p>
-              This is still an early version. I’m personally talking to users and improving it based on real feedback. If something feels off, you can reach me directly.
-            </p>
+          <div className="inline-block px-6 py-3 bg-white/10 rounded-xl border border-white/10 font-black text-xs uppercase tracking-widest">
+            Built for Solo Real Estate Professionals
           </div>
-          <a 
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-12 inline-flex items-center gap-3 text-blue-600 font-black text-lg uppercase tracking-widest hover:underline"
-          >
-            Chat with me on WhatsApp →
-          </a>
         </div>
       </section>
 
       {/* Pricing Section */}
-      <section className="py-32 bg-gray-900 text-white">
-        <div className="max-w-md mx-auto px-6 text-center">
-          <h2 className="text-4xl font-black mb-12">Simple pricing.</h2>
-          <div className="bg-white rounded-[40px] p-12 shadow-2xl text-gray-900">
-            <div className="flex items-baseline justify-center gap-1 mb-8">
-              <span className="text-7xl font-black">₹499</span>
-              <span className="text-xl font-bold text-gray-400">/mo</span>
+      <section className="py-32">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <h2 className="text-4xl font-black mb-4">Clean Pricing. No Surprises.</h2>
+          <div className="max-w-md mx-auto mt-12 bg-white rounded-3xl border-4 border-gray-900 p-10 shadow-2xl relative">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Professional Plan</div>
+            <p className="font-black text-gray-400 uppercase tracking-widest text-xs">Full Access</p>
+            <div className="flex items-baseline justify-center gap-1 my-6">
+              <span className="text-6xl font-black">₹499</span>
+              <span className="text-lg font-bold text-gray-400">/mo</span>
             </div>
-            <div className="space-y-4 mb-10 text-gray-700 font-bold">
-              <p className="text-blue-600">7-day free trial</p>
-              <p>Cancel anytime.</p>
-            </div>
+            <ul className="text-left space-y-4 mb-10">
+              {['Unlimited Lead Storage', 'One-Click WhatsApp Follow-up', 'Daily Work Checklist', '7-Day Free Trial'].map(item => (
+                <li key={item} className="flex items-center gap-3 font-bold text-gray-700">
+                  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
+                  {item}
+                </li>
+              ))}
+            </ul>
             <button 
               onClick={onStart}
-              className="w-full bg-blue-600 text-white py-6 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-blue-200 hover:-translate-y-1 transition-all"
+              className="w-full bg-gray-900 text-white py-5 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-gray-200 hover:-translate-y-1 transition-all"
             >
               Start Free Trial
             </button>
-            <p className="mt-8 text-xs text-gray-500 font-black leading-relaxed uppercase tracking-widest">
-              No free forever plan. Built for serious agents.
-            </p>
           </div>
+          <p className="mt-8 text-gray-400 font-medium text-sm italic">If it saves even one deal, the app pays for itself for the year.</p>
         </div>
       </section>
 
-      {/* Final Footer */}
-      <footer className="py-20 text-center bg-gray-100 border-t border-gray-300">
-        <div className="max-w-4xl mx-auto px-6 space-y-8">
-           <div className="flex items-center justify-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-black text-sm">S</div>
-            <span className="font-black text-xl tracking-tighter text-gray-900">SoloAgent</span>
+      {/* Final CTA */}
+      <footer className="bg-gray-50 py-32 border-t border-gray-200">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <h2 className="text-5xl font-black tracking-tight mb-8">Ready to clear your mind?</h2>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button onClick={onStart} className="bg-blue-600 text-white px-10 py-5 rounded-2xl text-sm font-black uppercase tracking-widest">Start Now</button>
+            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="bg-white border border-gray-200 text-gray-900 px-10 py-5 rounded-2xl text-sm font-black uppercase tracking-widest">Questions? Message Us</a>
           </div>
-          <p className="text-[11px] text-gray-600 font-black uppercase tracking-widest max-w-sm mx-auto leading-relaxed">
-            SoloAgent is an early version product. Features may change based on user feedback.
-          </p>
-          <div className="flex justify-center gap-8 text-[11px] font-black text-gray-500 uppercase tracking-widest">
+          <div className="mt-20 pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-bold text-gray-400 uppercase tracking-widest">
             <span>© 2025 SoloAgent CRM</span>
-            <button className="hover:text-gray-900 transition-colors">Privacy</button>
-            <button className="hover:text-gray-900 transition-colors">Terms</button>
+            <div className="flex gap-8">
+              <button className="hover:text-gray-900">Privacy Policy</button>
+              <button className="hover:text-gray-900">Terms of Service</button>
+            </div>
           </div>
         </div>
       </footer>
