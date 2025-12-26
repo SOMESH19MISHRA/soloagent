@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Lead, LeadStatus, Profile } from '../types';
-import { isToday, isOverdue, formatDate, getTrialDaysLeft, isTrialActive, isPaidActive } from '../utils';
+import { isToday, isOverdue, formatDate, getTrialDaysLeft, isTrialActive, isPaidActive, formatIndianCompact } from '../utils';
 
 interface DashboardProps {
   leads: Lead[];
@@ -67,7 +67,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, profile, onNavigateToLead,
         </div>
         <div className="bg-white p-6 rounded-3xl border border-emerald-200 shadow-sm border-b-4 border-b-emerald-500">
           <p className="text-[11px] text-emerald-700 font-bold uppercase tracking-widest">Pipeline</p>
-          <p className="text-2xl font-black text-gray-900 mt-2">₹{(pipelineValue / 100000).toFixed(1)}L</p>
+          <p className="text-2xl font-black text-gray-900 mt-2">₹{formatIndianCompact(pipelineValue)}</p>
         </div>
         <div className={`bg-white p-6 rounded-3xl border shadow-sm ${overdueFollowUps.length > 0 ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}>
           <p className={`text-[11px] font-bold uppercase tracking-widest ${overdueFollowUps.length > 0 ? 'text-red-700' : 'text-gray-600'}`}>Overdue</p>

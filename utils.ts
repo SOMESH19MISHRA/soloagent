@@ -28,6 +28,28 @@ export const formatDate = (dateString: string) => {
   }).format(new Date(dateString));
 };
 
+/**
+ * Formats numbers using the Indian Numbering System (Lakhs/Crores)
+ * Example: 100000 -> 1,00,000
+ */
+export const formatIndianNumber = (num: number) => {
+  return new Intl.NumberFormat('en-IN').format(num);
+};
+
+/**
+ * Formats currency using Indian Metric System (Compact)
+ * Example: 1,50,00,000 -> 1.5 Cr
+ * Example: 5,00,000 -> 5.0 L
+ */
+export const formatIndianCompact = (num: number) => {
+  if (num >= 10000000) {
+    return (num / 10000000).toFixed(2) + ' Cr';
+  } else if (num >= 100000) {
+    return (num / 100000).toFixed(2) + ' L';
+  }
+  return formatIndianNumber(num);
+};
+
 export const isOverdue = (dateString: string) => {
   if (!dateString) return false;
   return new Date(dateString) < new Date();

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Lead, LeadStatus } from '../types';
-import { formatDate, isOverdue } from '../utils';
+import { formatDate, isOverdue, formatIndianNumber } from '../utils';
 
 interface LeadsListProps {
   leads: Lead[];
@@ -115,7 +115,7 @@ const LeadsList: React.FC<LeadsListProps> = ({ leads, onNavigateToLead, onAddCli
                       </span>
                     </td>
                     <td className="px-6 py-5">
-                      <div className="text-sm font-bold text-gray-800">₹{lead.budget.toLocaleString()}</div>
+                      <div className="text-sm font-bold text-gray-800">₹{formatIndianNumber(lead.budget)}</div>
                       <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{lead.area}</div>
                     </td>
                     <td className="px-6 py-5">
@@ -162,7 +162,7 @@ const LeadsList: React.FC<LeadsListProps> = ({ leads, onNavigateToLead, onAddCli
                     <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${getStatusColor(lead.status)}`}>
                       {lead.status}
                     </span>
-                    <span className="text-[10px] font-bold text-blue-600">₹{lead.budget.toLocaleString()}</span>
+                    <span className="text-[10px] font-bold text-blue-600">₹{formatIndianNumber(lead.budget)}</span>
                   </div>
                 </div>
                 <div className="text-right">

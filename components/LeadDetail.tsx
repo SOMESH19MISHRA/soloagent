@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Lead, LeadStatus, FollowUpType, Note, FollowUp, FollowUpOutcome } from '../types';
-import { formatDate, isOverdue, getWhatsAppLink, getQuickDate } from '../utils';
+import { formatDate, isOverdue, getWhatsAppLink, getQuickDate, formatIndianNumber } from '../utils';
 import { supabase } from '../supabaseClient';
 import Paywall from './Paywall';
 
@@ -205,7 +205,7 @@ const LeadDetail: React.FC<LeadDetailProps> = ({ lead, onUpdate, onDelete, onBac
             <div className="flex items-center gap-3 mt-2">
                <span className="text-[11px] font-black text-gray-600 uppercase tracking-[0.2em]">{lead.area}</span>
                <span className="w-1.5 h-1.5 bg-gray-300 rounded-full"></span>
-               <span className="text-[11px] font-black text-blue-700 uppercase tracking-[0.2em]">₹{lead.budget.toLocaleString()}</span>
+               <span className="text-[11px] font-black text-blue-700 uppercase tracking-[0.2em]">₹{formatIndianNumber(lead.budget)}</span>
             </div>
           </div>
         </div>
