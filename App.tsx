@@ -169,6 +169,16 @@ const App: React.FC = () => {
     setCurrentView('leads');
   };
 
+  const handleLogout = () => {
+    if (supabase) {
+      supabase.auth.signOut();
+    } else {
+      setSession(null);
+      setProfile(null);
+      setShowLanding(true);
+    }
+  };
+
   if (loading) return null;
 
   if (showLanding) {
@@ -203,7 +213,7 @@ const App: React.FC = () => {
       case 'add-lead':
         return <LeadForm isActive={hasAccess} onSave={addLead} onCancel={() => setCurrentView('leads')} userContext={{ profile, email: session.user.email }} isLocalMode={isLocalMode} />;
       case 'profile':
-        return <Profile profile={profile} email={session.user.email} onUpdate={(u) => setProfile(u)} isLocalMode={isLocalMode} />;
+        return <Profile profile={profile} email={session.user.email} onUpdate={(u) => setProfile(u)} onLogout={handleLogout} isLocalMode={isLocalMode} />;
       case 'feedback':
         return <Feedback isLocalMode={isLocalMode} />;
       default:
@@ -225,7 +235,7 @@ const App: React.FC = () => {
       )}
       
       <div className="hidden md:block">
-        <Sidebar currentView={currentView} setView={setCurrentView} onLogout={() => supabase?.auth.signOut()} />
+        <Sidebar currentView={currentView} setView={setCurrentView} />
       </div>
       <main className="flex-1 p-4 md:p-10 overflow-y-auto relative">
         {renderView()}

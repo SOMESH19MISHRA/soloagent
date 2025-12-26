@@ -7,10 +7,11 @@ interface ProfileProps {
   profile: ProfileType | null;
   email: string | undefined;
   onUpdate: (updated: ProfileType) => void;
+  onLogout: () => void;
   isLocalMode?: boolean;
 }
 
-const Profile: React.FC<ProfileProps> = ({ profile, email, onUpdate, isLocalMode }) => {
+const Profile: React.FC<ProfileProps> = ({ profile, email, onUpdate, onLogout, isLocalMode }) => {
   const [name, setName] = useState(profile?.full_name || '');
   const [phone, setPhone] = useState(profile?.phone || '');
   const [saving, setSaving] = useState(false);
@@ -90,7 +91,6 @@ const Profile: React.FC<ProfileProps> = ({ profile, email, onUpdate, isLocalMode
             <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Plan Status</label>
             <div className="px-4 py-3 bg-blue-50 border border-blue-100 rounded-xl">
               <span className="text-sm font-black text-blue-600 uppercase tracking-widest">
-                {/* Fix: Property 'is_active' does not exist on type 'Profile', it exists on 'Profile.subscription' */}
                 {isLocalMode ? 'Local Lifetime' : (profile?.subscription?.is_active ? 'Active Pro' : 'Free Trial')}
               </span>
             </div>
@@ -108,6 +108,17 @@ const Profile: React.FC<ProfileProps> = ({ profile, email, onUpdate, isLocalMode
           {message && <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest">{message}</span>}
         </div>
       </form>
+
+      <div className="mt-12 pt-10 border-t border-gray-200">
+        <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-4 px-1">Danger Zone</h3>
+        <button 
+          onClick={onLogout}
+          className="w-full md:w-auto bg-red-50 text-red-700 border-2 border-red-100 px-8 py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-red-100 transition-all shadow-sm flex items-center justify-center gap-3"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+          Sign Out of Account
+        </button>
+      </div>
       
       {isLocalMode && (
         <div className="mt-8 p-4 bg-amber-50 rounded-2xl border border-amber-100">
